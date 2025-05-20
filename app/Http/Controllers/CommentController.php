@@ -32,5 +32,5 @@ class CommentController extends Controller
         return response()->json(['message' => 'Comentario creado'], 201);
     }
 
-    // ... otros métodos del CommentController ...
+    // Otros métodos del CommentController (index, update, destroy) irían aquí
 }

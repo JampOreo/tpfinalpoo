@@ -10,25 +10,32 @@ use Illuminate\Validation\ValidationException;
 class AuthController extends Controller
 {
     public function register(Request $request)
-	{
-		$data = $request->validate([
-			'nombre' => 'required|string|max:255', // Cambiado a 'nombre'
-			'email' => 'required|string|email|max:255|unique:users',
-			'password' => 'required|string|min:6|confirmed',
-			'rol' => 'in:usuario,comentarista,administrador',
-			'password_confirmation' => 'required|string|min:6',
-		]);
+    {
+        $data = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:6|confirmed',
+            'rol' => 'in:usuario,comentarista,administrador',
+            'password_confirmation' => 'required|string|min:6',
+        ]);
 
-		$user = User::create([
-			'nombre' => $data['nombre'], // Cambiado a 'nombre'
-			'email' => $data['email'],
-			'password' => Hash::make($data['password']),
-			'rol' => $data['rol'] ?? 'usuario',
-			'fecha_creacion' => now()
-		]);
+        $hashedPassword = Hash::make($data['password']);
 
-		return response()->json(['message' => 'Usuario creado'], 201);
-	}
+        try {
+            $user = User::create([
+                'name' => $data['name'],
+                'email' => $data['email'],
+                'password' => $hashedPassword,
+                'rol' => $data['rol'] ?? 'usuario',
+                'fecha_creacion' => now()
+            ]);
+
+            return response()->json(['message' => 'Usuario creado', 'user' => $user], 201);
+
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Error al crear usuario: ' . $e->getMessage()], 500);
+        }
+    }
 
     public function login(Request $request)
     {

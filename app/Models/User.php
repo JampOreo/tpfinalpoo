@@ -10,7 +10,6 @@ use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-	
     use HasApiTokens, HasFactory, Notifiable;
 
     protected $fillable = [
@@ -29,6 +28,7 @@ class User extends Authenticatable
     protected $casts = [
         'fecha_creacion' => 'datetime',
         'email_verified_at' => 'datetime',
+        'password' => 'hashed',
     ];
 
     public function posts()
@@ -45,7 +45,7 @@ class User extends Authenticatable
     {
         return $this->hasMany(AccessLog::class, 'usuario_id');
     }
-	
+
     public function hasRole($roles)
     {
         if (is_array($roles)) {
@@ -53,28 +53,4 @@ class User extends Authenticatable
         }
         return $this->rol === $roles;
     }
-	public function store(Request $request)
-    {
-        $request->validate([
-            'post_id' => 'required|exists:posts,id',
-            'contenido' => 'required|string',
-        ]);
-
-        $user = Auth::user();
-
-        if (!$user->hasRole(['comentarista', 'administrador'])) {
-            throw new AuthorizationException('Solo los comentaristas y administradores pueden crear comentarios.');
-        }
-
-        $comment = new Comment([
-            'user_id' => $user->id,
-            'post_id' => $request->post_id,
-            'contenido' => $request->contenido,
-        ]);
-        $comment->save();
-
-        return response()->json(['message' => 'Comentario creado'], 201);
-    }
-
 }
-
